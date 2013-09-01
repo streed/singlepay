@@ -1,11 +1,4 @@
-from singlepay.app import app
-from singlepay.processors.processors import processors
-from singlepay.customers.customers import customers
-from singlepay.information.information import information
-
-app.register_blueprint( processors, url_prefix="/processors" )
-app.register_blueprint( customers, url_prefix="/customers" )
-app.register_blueprint( information, url_prefix="/information" )
+from singlepay import app
 
 if __name__ == "__main__":
 	app.run()
