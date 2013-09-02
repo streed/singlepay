@@ -4,14 +4,18 @@ from flask.ext.restful import reqparse
 
 from flask.ext.security import login_required
 
+from ..security.secure_access import secure
+
 parser = reqparse.RequestParser()
 
 
 class Customers( restful.Resource ):
 
+	@secure
 	def get( self ):
 		return {"customers": [] }
 
+	@secure
 	def post( self ):
 		data = request.form["data"]
 

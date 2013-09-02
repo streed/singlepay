@@ -31,6 +31,9 @@ api_datastore = SQLAlchemyUserDatastore( db, ApiUser, ApiRole )
 
 security = Security( app, api_datastore )
 
+from security.secure_access import secure_unauthorized
+app.login_manager.unauthorized = secure_unauthorized
+
 @app.before_first_request
 def create_user():
 	db.create_all()
