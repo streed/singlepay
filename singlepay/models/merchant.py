@@ -1,4 +1,4 @@
-from singlepay.db import db
+from ..app import db
 
 class Merchant( db.Model ):
 	id = db.Column( db.Integer(), primary_key=True )

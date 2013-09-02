@@ -2,10 +2,13 @@ from flask import request
 from flask.ext import restful
 from flask.ext.restful import reqparse
 
+from flask.ext.security import login_required
+
 parser = reqparse.RequestParser()
 
 
 class Customers( restful.Resource ):
+
 	def get( self ):
 		return {"customers": [] }
 
