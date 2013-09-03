@@ -48,6 +48,11 @@ def _check_access():
 	"""
 	publicKey = request.headers.get( "PublicKey", None )
 	timestamp = request.headers.get( "Timestamp", None )
+	if not publicKey or not timestamp:
+		return False
+	else:
+		timestamp = int( timestamp )
+
 	user = _security.datastore.find_user( email=publicKey )
 
 	if user and user.is_active():
