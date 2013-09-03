@@ -108,7 +108,7 @@ def secure( f ):
 		if _check_access() and _check_timestamp():
 			return f( args, kwargs )
 		else:
-			return False
+			return secure_unauthorized()
 	
 	return wrapped
 
