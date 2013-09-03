@@ -4,6 +4,7 @@ from functools import wraps
 from flask import current_app, request, _request_ctx_stack
 from flask.ext.security import login_required
 from flask.ext.restful import reqparse
+from flask.ext.principal import Identity, identity_changed
 from werkzeug.local import LocalProxy
 
 try:
@@ -59,8 +60,8 @@ def _check_access():
 		else:
 			body = current_app.json_decoder.decode( body )
 
-		signature = _calc_signature( privateKey, publicKey, request.path, body )
 		timestamp = int( timestamp )
+		signature = _calc_signature( privateKey, publicKey, request.path, body, timestamp )
 		currentTimestamp = time.time()
 
 		if ( signature == request.headers.get( "Signature", "" ) ) and ( timestamp >= currentTimestamp - 300 ):
@@ -73,10 +74,6 @@ def _check_access():
 	else:
 		return False
 
-parser = reqparse.RequestParser()
-parser.add_argument( "Timestamp", type=int, required=True, help="Timestamp must be an integer value." )
-parser.add_argument( "Signature", type=str, required=True, help="Signature must be a string value." )
-parser.add_argument( "PublicKey", type=str, required=True, help="PublicKey must be a string value." )
 def secure( f ):
 	"""
 		This will wrap a method that will then check if the passed in
@@ -102,12 +99,12 @@ def secure( f ):
 				it must be within the past 5 minutes.
 		PublicKey -> The public key of the requesting client.
 
+		TODO: MAKE SURE THAT THE HEADERS ARE TEHRE AND IN THE PROPER FORMAT.
 	"""
 	@wraps( f )
 	def wrapped( *args, **kwargs ):
-		parser.parse_args()
 		if _check_access():
-			return f( args, kwargs )
+			return f( *args, **kwargs )
 		else:
 			return secure_unauthorized()
 	

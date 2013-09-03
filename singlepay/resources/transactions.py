@@ -2,20 +2,41 @@
 from flask import request
 from flask.ext import restful
 
-class Transactions( restful.Resource ):
-	def get( self, _type ):
-		return {}
+from flask.ext.security.decorators import roles_accepted
 
+from ..security.secure_access import secure
+
+class Transactions( restful.Resource ):
+
+	@secure
+	@roles_accepted( "customer", "merchant" )
+	def get( self, _type="" ):
+		print _type
+		ret = {}
+		ret[_type] = {}
+
+		return ret
+
+	@secure
+	@roles_accepted( "customer", "merchant" )
 	def post( self, _type ):
 		data = request.form["data"]
 
-		return {}
+		ret = {}
+		ret[_type] = {}
+
+		return ret
 
 class Transaction( restful.Resource ):
-	def get( self, _type, transaction_id ):
-		return {}
 
+	@secure
+	@roles_accepted( "customer", "merchant" )
+	def get( self, _type, transaction_id ):
+		return { "transaction": {} }
+
+	@secure
+	@roles_accepted( "customer", "merchant" )
 	def put( self, _type, transaction_id ):
 		data = request.form["data"]
 
-		return {}
+		return { "transaction": {} }

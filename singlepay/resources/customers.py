@@ -15,8 +15,6 @@ class Customers( restful.Resource ):
 	@secure
 	@roles_required( "customer" )
 	def get( self ):
-		print dir( request )
-		print request.path
 		return {"customers": [] }
 
 	@secure
@@ -28,9 +26,13 @@ class Customers( restful.Resource ):
 
 class Customer( restful.Resource ):
 
+	@secure
+	@roles_required( "customer" )
 	def get( self, customer_id ):
 		return { "customer": {} }
 
+	@secure
+	@roles_required( "customer" )
 	def put( self, customer_id ):
 		data = request.form["data"]
 
