@@ -3,19 +3,26 @@ import time
 from functools import wraps
 from flask import current_app, request, _request_ctx_stack
 from flask.ext.security import login_required
+from flask.ext.restful import reqparse
 from werkzeug.local import LocalProxy
+
+try:
+	from urllib.parse import quote
+except ImportError:
+	from urllib import quote
 
 #Grab a thread local proxy to the security extension.
 _security = LocalProxy( lambda: current_app.extensions["security"] )
 
+
 def _calc_signature( private, public, action, body ):
-	signature = "%s|%s|%s" % ( private, action, public )
+	signature = "%s|%s|%s|" % ( private, action, public )
 
 	keys = sorted( body.keys() )
 
 	body_strs = []
 	for k in keys:
-		body_strs.append( "%s=%s" % ( k, body[k] ) )
+		body_strs.append( "%s=%s" % ( quote( k, safe='' ), quote( body[k], safe="-_~" ) ) )
 
 	signature += "&".join( body_strs )
 
@@ -30,7 +37,6 @@ def _check_access():
 		user = _security.datastore.find_user( email=publicKey )
 
 		if user:
-			#get the private key.
 			privateKey = user.password
 
 			body = request.form.get( "data", None )
@@ -42,7 +48,6 @@ def _check_access():
 
 			signature = _calc_signature( privateKey, publicKey, request.path, body )
 
-			#check the signature to the one in the request.
 			if signature == request.headers.get( "Signature", "" ):
 				return True
 			else:
@@ -51,7 +56,7 @@ def _check_access():
 		return False
 
 def _check_timestamp():
-	timestamp = request.headers.get "Timestamp", None )
+	timestamp = request.headers.get( "Timestamp", None )
 
 	if timestamp:
 		timestamp = int( timestamp )
@@ -64,6 +69,10 @@ def _check_timestamp():
 	else:
 		return False
 
+parser = reqparse.RequestParser()
+parser.add_argument( "Timestamp", type=int, required=True, help="Timestamp must be an integer value." )
+parser.add_argument( "Signature", type=str, required=True, help="Signature must be a string value." )
+parser.add_argument( "PublicKey", type=str, required=True, help="PublicKey must be a string value." )
 def secure( f ):
 	"""
 		This will wrap a method that will then check if the passed in
@@ -83,18 +92,8 @@ def secure( f ):
 
 		The following headers will be used.
 
-		Signature -> Shall be a hash of the Data to be sent to this 
-				server and the rest action.
-
-				/transactions
-
-				The signature shall be constructed as such:
-
-				private_key + "/transactions" + ""
-
-				or in a more generic fashion:
-
-				<private_key> + <action> + <request body>
+		Signature -> Shall be the Sha512 of the following:
+				<private key>|<action>|<public key>|<url encoded list of body>
 		Timestamp -> The current time stamp of the request. To be valid
 				it must be within the past 5 minutes.
 		PublicKey -> The public key of the requesting client.
@@ -102,11 +101,11 @@ def secure( f ):
 	"""
 	@wraps( f )
 	def wrapped( *args, **kwargs ):
-		if _check_access() and _check_timestamp()
+		parser.parse_args()
+		if _check_access() and _check_timestamp():
 			return f( args, kwargs )
 		else:
 			return False
-
 	
 	return wrapped
 
