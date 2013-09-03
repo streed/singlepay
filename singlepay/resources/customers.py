@@ -13,6 +13,8 @@ class Customers( restful.Resource ):
 
 	@secure
 	def get( self ):
+		print dir( request )
+		print request.path
 		return {"customers": [] }
 
 	@secure
