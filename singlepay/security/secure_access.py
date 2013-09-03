@@ -15,8 +15,13 @@ except ImportError:
 _security = LocalProxy( lambda: current_app.extensions["security"] )
 
 
-def _calc_signature( private, public, action, body ):
-	signature = "%s|%s|%s|" % ( private, action, public )
+def _calc_signature( private, public, action, body, timestamp ):
+	"""
+		This will take the private, public, action, body, timestamp
+		and construct the proper signature for use in verification
+		of the request.
+	"""
+	signature = "%s|%s|%s|%d|" % ( private, action, public, timestamp )
 
 	keys = sorted( body.keys() )
 
@@ -32,40 +37,36 @@ def _calc_signature( private, public, action, body ):
 	return sig.hexdigest().strip().encode( "utf-8" )
 
 def _check_access():
+	"""
+		This will get the publicKey, timestamp, body, and the path
+		and verify that the Signature in the header is correct. 
+		It will also make sure that the request is not over 5mins old.
+
+		If the request is valid then the current user is set to the right
+		user and True is returned, else False is returned.
+	"""
 	publicKey = request.headers.get( "PublicKey", None )
-	if publicKey:
-		user = _security.datastore.find_user( email=publicKey )
-
-		if user and user.is_active():
-			privateKey = user.password
-
-			body = request.form.get( "data", None )
-
-			if not body:
-				body = {}
-			else:
-				body = current_app.json_decoder.decode( body )
-
-			signature = _calc_signature( privateKey, publicKey, request.path, body )
-
-			if signature == request.headers.get( "Signature", "" ):
-				app = current_app._get_current_object()
-				_request_ctx_stack.top.user = user
-				identity_changed.send( app, identity=Identity( user.id ) )
-				return True
-			else:
-				return False
-	else:
-		return False
-
-def _check_timestamp():
 	timestamp = request.headers.get( "Timestamp", None )
+	user = _security.datastore.find_user( email=publicKey )
 
-	if timestamp:
+	if user and user.is_active():
+		privateKey = user.password
+
+		body = request.form.get( "data", None )
+
+		if not body:
+			body = {}
+		else:
+			body = current_app.json_decoder.decode( body )
+
+		signature = _calc_signature( privateKey, publicKey, request.path, body )
 		timestamp = int( timestamp )
 		currentTimestamp = time.time()
 
-		if timestamp >= currentTimestamp - 300:
+		if ( signature == request.headers.get( "Signature", "" ) ) and ( timestamp >= currentTimestamp - 300 ):
+			app = current_app._get_current_object()
+			_request_ctx_stack.top.user = user
+			identity_changed.send( app, identity=Identity( user.id ) )
 			return True
 		else:
 			return False
@@ -105,7 +106,7 @@ def secure( f ):
 	@wraps( f )
 	def wrapped( *args, **kwargs ):
 		parser.parse_args()
-		if _check_access() and _check_timestamp():
+		if _check_access():
 			return f( args, kwargs )
 		else:
 			return secure_unauthorized()
