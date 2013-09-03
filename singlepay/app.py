@@ -37,6 +37,9 @@ app.login_manager.unauthorized = secure_unauthorized
 @app.before_first_request
 def create_user():
 	db.create_all()
-	api_datastore.create_user( email="sean@cheapfit.me", password="password" )
+	user = api_datastore.create_user( email="sean@cheapfit.me", password="password" )
+	role = api_datastore.create_role( name="customer", description="Identitifies the user as a customer." )
+	api_datastore.add_role_to_user( user, role )
+	api_datastore.create_role( name="merchant", description="Identitifies a user as a merchant." )
 	db.session.commit()
 

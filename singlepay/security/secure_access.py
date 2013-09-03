@@ -36,7 +36,7 @@ def _check_access():
 	if publicKey:
 		user = _security.datastore.find_user( email=publicKey )
 
-		if user:
+		if user and user.is_active():
 			privateKey = user.password
 
 			body = request.form.get( "data", None )
@@ -49,6 +49,9 @@ def _check_access():
 			signature = _calc_signature( privateKey, publicKey, request.path, body )
 
 			if signature == request.headers.get( "Signature", "" ):
+				app = current_app._get_current_object()
+				_request_ctx_stack.top.user = user
+				identity_changed.send( app, identity=Identity( user.id ) )
 				return True
 			else:
 				return False
