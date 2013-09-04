@@ -68,6 +68,16 @@ class Customer( Base ):
 	def delete( self ):
 		return None
 
+	def debit( self, other ):
+		return None
+
+	def credit( self, other ):
+		return None
+
+	def refund( self, transaction ):
+		return None
+
+
 class Merchant( Base ):
 	def __init__( self, api, id=None, merchant_uri=None, transactions=[] ):
 		Base.__init__( self, api )
@@ -93,3 +103,14 @@ class Merchant( Base ):
 	def delete( self ):
 		return None
 
+	def debit( self, other ):
+		return None
+
+	def credit( self, other ):
+		return None
+
+	def verify_bank( self ):
+		return None
+
+	def start_deposit( self ):
+		return None
