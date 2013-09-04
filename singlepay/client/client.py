@@ -1,8 +1,13 @@
 import time
 import os
 import ConfigParser
+from collections import namedtuple
 from requests import get, post
 from ..security.secure_access import _calc_signature
+
+Transaction = namedtuple( "Transaction", "id, amount, timestamp, message" )
+Customer = namedtuple( "Customer", "id, customer_uri, transactions" )
+Merchant = namedtuple( "Merchant", "id, merchant_uri, transactions" )
 
 class SinglePay( object ):
 
@@ -30,7 +35,7 @@ class SinglePay( object ):
 
 		response = response.json()
 
-		return response
+		return [ Transaction( **k ) for k in response[_type] ]
 
 	def debits( self ):
 		return self._transactions( "debits" )
@@ -42,5 +47,10 @@ class SinglePay( object ):
 		response = self._make_request( get, "/customers", {} )
 		response = response.json()
 
-		return response
+		for k in response["customers"]:
+			k["transactions"] = [ Transaction( **i ) for i in k["transactions"] ]
+
+		result = [ Customer( **k ) for k in response["customers"] ]
+
+		return result
 

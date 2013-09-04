@@ -15,7 +15,7 @@ class Customers( restful.Resource ):
 	@secure
 	@roles_required( "customer" )
 	def get( self ):
-		return {"customers": [] }
+		return {"customers": [ { "id": 1, "customer_uri": "http://fake.com", "transactions": [ { "id": 2, "amount": 200, "message": "yay this works", "timestamp": 1000000 } ] }] }
 
 	@secure
 	@roles_required( "customer" )

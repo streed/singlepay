@@ -13,7 +13,7 @@ class Transactions( restful.Resource ):
 	def get( self, _type="" ):
 		print _type
 		ret = {}
-		ret[_type] = {}
+		ret[_type] = [ { "id": 1, "amount": 100, "timestamp": 10000, "message": "test" } ]
 
 		return ret
 
