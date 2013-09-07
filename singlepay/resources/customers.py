@@ -7,6 +7,8 @@ from flask.ext.security.decorators import roles_required
 
 from ..security.secure_access import secure
 
+from ..models.customer import Customer as CustomerModel
+
 parser = reqparse.RequestParser()
 
 
@@ -15,25 +17,25 @@ class Customers( restful.Resource ):
 	@secure
 	@roles_required( "customer" )
 	def get( self ):
-		return {"customers": [ { "id": 1, "customer_uri": "http://fake.com", "transactions": [ { "id": 2, "amount": 200, "message": "yay this works", "timestamp": 1000000 } ] }] }
+		return { "customers": [ i.serialize for i in CustomerModel.query.all() ] }
 
 	@secure
 	@roles_required( "customer" )
 	def post( self ):
 		data = request.form["data"]
 
-		return { "customers": [] }
+		return { "customers": [ i.serialize for i in CustomerModel.query.all() ] }
 
 class Customer( restful.Resource ):
 
 	@secure
 	@roles_required( "customer" )
 	def get( self, customer_id ):
-		return { "customer": {} }
+		return { "customer": CustomerModel.query.filter_by( id=customer_id ).first().serialize }
 
 	@secure
 	@roles_required( "customer" )
 	def put( self, customer_id ):
 		data = request.form["data"]
 
-		return { "customer": {} }
+		return { "customer": CustomerModel.query.filter_by( id=customer_id ).first().serialize }

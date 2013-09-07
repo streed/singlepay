@@ -1,4 +1,4 @@
-from ..app import db
+from ..app.app import db
 
 class Transaction( db.Model ):
 	id = db.Column( db.Integer(), primary_key=True )
@@ -9,3 +9,11 @@ class Transaction( db.Model ):
 	merchant_id = db.Column( db.Integer(), db.ForeignKey( "merchant.id" ) )
 	customer_id = db.Column( db.Integer(), db.ForeignKey( "customer.id" ) )
 
+	@property
+	def serialize( self ):
+		return { "id": self.id,
+			 "amount": self.amount,
+			 "timestamp": self.timestamp,
+			 "message": self.message,
+			 "customer": self.customer,
+			 "merchant": self.merchant }

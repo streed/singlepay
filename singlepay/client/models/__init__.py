@@ -39,7 +39,7 @@ class Transaction( Base ):
 	def message( self ):
 		return self._message
 
-	def refund( self ):
+	def refund( self, owner ):
 		return None
 
 class Customer( Base ):
@@ -75,8 +75,7 @@ class Customer( Base ):
 		return None
 
 	def refund( self, transaction ):
-		return None
-
+		return transaction.refund( self )
 
 class Merchant( Base ):
 	def __init__( self, api, id=None, merchant_uri=None, transactions=[] ):
@@ -114,3 +113,4 @@ class Merchant( Base ):
 
 	def start_deposit( self ):
 		return None
+
