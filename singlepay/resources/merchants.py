@@ -1,33 +1,29 @@
 from flask import request
 from flask.ext import restful
 
-from flask.ext.security.decorators import roles_required
+from flask.ext.security.decorators import roles_required, roles_accepted
 
-from ..security.secure_access import secure
+from secureresource import SecureResource
 
-class Merchants( restful.Resource ):
+class Merchants( SecureResource ):
 
-	@secure
-	@roles_required( "merchant" )
+	@roles_required( "internal", "merchant" )
 	def get( self ):
 		return { "merchants": [] }
 
-	@secure
-	@roles_required( "merchant" )
+	@roles_required( "internal", "merchant" )
 	def post( self ):
 		data = request.form["data"]
 
 		return { "merchants": [] }
 
-class Merchant( restful.Resource ):
+class Merchant( SecureResource ):
 
-	@secure
-	@roles_required( "merchant" )
+	@roles_required( "internal", "merchant" )
 	def get( self, merchant_id ):
 		return { "merchant": {} }
 
-	@secure
-	@roles_required( "merchant" )
+	@roles_required( "internal", "merchant" )
 	def put( self, merchant_id ):
 		data = request.form["data"] 
 

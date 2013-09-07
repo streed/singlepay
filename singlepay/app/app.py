@@ -16,6 +16,7 @@ api = Api( app )
 from ..resources.customers import Customers, Customer
 from ..resources.merchants import Merchants, Merchant
 from ..resources.transactions import Transactions, Transaction
+from ..resources.information import Information
 
 api.add_resource( Customers, "/customers" )
 api.add_resource( Customer, "/customer/<int:customer_id>" )
@@ -24,7 +25,9 @@ api.add_resource( Merchants, "/merchants" )
 api.add_resource( Merchant, "/merchant/<int:merchant_id>" )
 
 api.add_resource( Transactions, "/transactions/<_type>" )
-api.add_resource( Transaction, "/transaction/<_type>/<int:transaction_id>" )
+api.add_resource( Transaction, "/transaction/<owner_type>/<int:owner_id>/<_type>/<int:transaction_id>" )
+
+api.add_resource( Information, "/information" )
 
 from ..models.api_user import ApiUser, ApiRole
 from ..models.transaction import Transaction
@@ -37,6 +40,12 @@ security = Security( app, api_datastore )
 from ..security.secure_access import secure_unauthorized
 app.login_manager.unauthorized = secure_unauthorized
 
+@app.errorhandler( 500 )
+def internal_error( e ):
+	print e
+
+	return { "status": 500, "message": e.message }
+
 @app.before_first_request
 def create_user():
 	if app.config["DEBUG"]:
@@ -44,6 +53,8 @@ def create_user():
 		db.create_all()
 		user = api_datastore.create_user( email="sean@cheapfit.me", password="password" )
 		role = api_datastore.create_role( name="customer", description="Identitifies the user as a customer." )
+		api_datastore.add_role_to_user( user, role )
+		role = api_datastore.create_role( name="internal", description="Marks the API user as an internal one." )
 		api_datastore.add_role_to_user( user, role )
 		api_datastore.create_role( name="merchant", description="Identitifies a user as a merchant." )
 		db.session.commit()

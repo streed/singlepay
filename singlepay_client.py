@@ -11,3 +11,5 @@ if __name__ == "__main__":
 
 	print s.debits()
 	print s.credits()
+
+	m = s.merchants()

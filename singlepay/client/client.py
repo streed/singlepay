@@ -48,3 +48,12 @@ class SinglePay( object ):
 
 		return result
 
+	def merchants( self ):
+		response = self._make_request( get, "/merchants", {} )
+		response = response.json()
+
+		print response
+
+		result = [ Merchant( self, **k ) for k in response["merchants"] ]
+
+		return result
