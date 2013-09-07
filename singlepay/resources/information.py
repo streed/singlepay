@@ -9,7 +9,5 @@ from ..models.transaction import Transaction
 
 class Information( SecureResource ):
 
-	decorators = [ secure ]
-
 	def get( self ):
 		return { "transactions": [ i.serialize for i in Transaction.query.all() ] }
