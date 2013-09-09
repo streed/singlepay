@@ -14,4 +14,4 @@ if __name__ == "__main__":
 
 	m = s.merchants()
 	"""
-	print s.customer.create().set_id( 999 ).finalize().id
+	print s.customer.create().set_customer_uri( "/hello" ).set_id( 9999 ).finalize().id

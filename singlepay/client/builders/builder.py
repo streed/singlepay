@@ -8,8 +8,8 @@ class BuilderMetaClass( type ):
 
 		if BuilderMetaClass.__attribute_name in dct:
 			for k in self._attributes_:
-				def temporary_function( s, value ):
-					setattr( s._instance, "_%s" % k, value )
+				def temporary_function( s, value, _k=k ):
+					setattr( s._instance, "_%s" % _k, value )
 					return s
 
 				setattr( self, "set_%s" % k, temporary_function )
