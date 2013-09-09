@@ -5,6 +5,7 @@ from collections import namedtuple
 from requests import get, post
 from ..security.secure_access import _calc_signature
 from .models import Transaction, Customer, Merchant
+from .builders.customer import Customer as CustomerBuilder
 
 class SinglePay( object ):
 
@@ -17,6 +18,8 @@ class SinglePay( object ):
 
 			self.public = config.get("Keys", "public" )
 			self.private = config.get( "Keys", "private" )
+
+		self.__customer_builder = CustomerBuilder( self )
 
 	def _make_request( self, method, action, body ):
 		timestamp = int( time.time() )
@@ -57,3 +60,11 @@ class SinglePay( object ):
 		result = [ Merchant( self, **k ) for k in response["merchants"] ]
 
 		return result
+
+	@property
+	def customer( self ):
+		return self.__customer_builder
+
+	@property
+	def merchant( self ):
+		return self.__merchant_builder

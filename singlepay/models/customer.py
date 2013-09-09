@@ -5,6 +5,8 @@ class Customer( db.Model ):
 	customer_uri = db.Column( db.String( 512 ) )
 	transactions = db.relationship( "Transaction", backref=db.backref( "customer" ) )
 
+	db = db
+
 	def __init__( self, customer_uri ):
 		self.customer_uri = customer_uri
 
@@ -15,3 +17,7 @@ class Customer( db.Model ):
 		return { "id": self.id,
 			 "customer_uri": self.customer_uri,
 			 "transactions": [ i.serialize for i in self.transactions ] }
+
+	def save( self ):
+		db.session.add( self )
+		db.session.commit()

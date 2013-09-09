@@ -7,6 +7,10 @@ from secureresource import SecureResource
 
 from ..models.customer import Customer as CustomerModel
 
+from schema import Schema, And, Use
+
+customer = Schema( { "customer": { "customer_uri": str } } )
+
 
 class Customers( SecureResource ):
 
@@ -22,12 +26,18 @@ class Customers( SecureResource ):
 
 class Customer( SecureResource ):
 
-	@roles_required( "customer", "internal" )
+	@roles_accepted( "internal", "customer" )
 	def get( self, customer_id ):
 		return { "customer": CustomerModel.query.filter_by( id=customer_id ).first().serialize }
 
-	@roles_required( "customer", "interal" )
+	@roles_required( "internal", "customer" )
 	def put( self, customer_id ):
 		data = request.form["data"]
+
+		data = customer.validate( data )
+
+		customer = CustomerModel( data["customer"]["customer_uri"] )
+
+		customer.save()		
 
 		return { "customer": CustomerModel.query.filter_by( id=customer_id ).first().serialize }

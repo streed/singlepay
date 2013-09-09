@@ -21,6 +21,7 @@ class Transaction( Base ):
 		self._timestamp = timestamp
 		self._message = message
 
+	def _finalize( self ):
 		self._path = "/transaction/%d" % self._id
 
 	@property
@@ -51,6 +52,7 @@ class Customer( Base ):
 		self._customer_uri = customer_uri
 		self._transactions = [ Transaction( api, **i ) for i in transactions ]
 
+	def _finalize( self ):
 		self._path = "/customer/%d" % self._id
 
 	@property
