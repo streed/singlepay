@@ -84,9 +84,10 @@ class Merchant( Base ):
 		Base.__init__( self, api )
 
 		self._id = id
-		self._merchant_uri = customer_uri
+		self._merchant_uri = merchant_uri
 		self._transactions = [ Transaction( api, **i ) for i in transactions ]
 
+	def _finalize( self ):
 		self._path = "/merchant/%d" % self._id
 
 	@property
@@ -94,8 +95,8 @@ class Merchant( Base ):
 		return self._id
 
 	@property
-	def customer_uri( self ):
-		return self._customer_uri
+	def merchant_uri( self ):
+		return self._merchant_uri
 
 	@property
 	def transactions( self ):

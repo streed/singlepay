@@ -11,25 +11,20 @@ class BuilderMetaClass( type ):
 				def temporary_function( s, value, _k=k ):
 					setattr( s._instance, "_%s" % _k, value )
 					return s
-
 				setattr( self, "set_%s" % k, temporary_function )
 		
 			def create( s ):
 				s._instance = s._model_( s._api )
 
-				#Set all the defaults on the object
 				for k in s._attributes_:
 					getattr( s, "set_%s" % k )( self._attributes_[k] )
-
 				return s
 
 			setattr( self, "create", create )
 
 			def finalize( s ):
 				s._instance._finalize()
-
 				return s._instance
-
 			setattr( self, "finalize", finalize )
 
 

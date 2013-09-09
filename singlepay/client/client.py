@@ -6,6 +6,7 @@ from requests import get, post
 from ..security.secure_access import _calc_signature
 from .models import Transaction, Customer, Merchant
 from .builders.customer import Customer as CustomerBuilder
+from .builders.merchant import Merchant as MerchantBuilder
 
 class SinglePay( object ):
 
@@ -20,6 +21,7 @@ class SinglePay( object ):
 			self.private = config.get( "Keys", "private" )
 
 		self.__customer_builder = CustomerBuilder( self )
+		self.__merchant_builder = MerchantBuilder( self )
 
 	def _make_request( self, method, action, body ):
 		timestamp = int( time.time() )
