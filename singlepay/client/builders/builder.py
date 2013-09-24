@@ -13,23 +13,24 @@ class BuilderMetaClass( type ):
 					return s
 				setattr( self, "set_%s" % k, temporary_function )
 		
-			def create( s ):
-				s._instance = s._model_( s._api )
-
-				for k in s._attributes_:
-					getattr( s, "set_%s" % k )( self._attributes_[k] )
-				return s
-
-			setattr( self, "create", create )
-
-			def finalize( s ):
-				s._instance._finalize()
-				return s._instance
-			setattr( self, "finalize", finalize )
-
 
 class Builder( object ):
 	__metaclass__ = BuilderMetaClass
 
 	def __init__( self, api ):
 		self._api = api
+	
+	def create( self ):
+		self._instance = self._model_( self._api )
+
+		for k in self._attributes_:
+			getattr( self, "set_%s" % k )( self._attributes_[k] )
+		return self
+
+	def finalize( self ):
+		self._instance._finalize()
+		return self._instance
+
+	def find( self ):
+		self.finalize()
+		return self._instance.find()

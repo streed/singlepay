@@ -24,6 +24,11 @@ class SinglePay( object ):
 		self.__merchant_builder = MerchantBuilder( self )
 
 	def _make_request( self, method, action, body ):
+		if method == "get":
+			method = get
+		elif method == "post":
+			method = post
+
 		timestamp = int( time.time() )
 
 		signature = _calc_signature( self.private, self.public, action, body, timestamp )
@@ -56,8 +61,6 @@ class SinglePay( object ):
 	def merchants( self ):
 		response = self._make_request( get, "/merchants", {} )
 		response = response.json()
-
-		print response
 
 		result = [ Merchant( self, **k ) for k in response["merchants"] ]
 

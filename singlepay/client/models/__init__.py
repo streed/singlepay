@@ -3,13 +3,20 @@
 #Customer = namedtuple( "Customer", "id, customer_uri, transactions" )
 #Merchant = namedtuple( "Merchant", "id, merchant_uri, transactions" )
 
+class SinglePayError( Exception ):
+	pass
+
 class Base( object ):
 	
 	def __init__( self, api=None ):
 		self._api = api
 
-	def __proxy_request( self, method, action, body ):
+	def _proxy_request( self, method, action, body ):
 		return self._api._make_request( method, action, body )
+
+	def __str__( self ):
+		klass = str( self.__class__ ).replace( "<class '", "" ).replace( "'>", "" )
+		return "<%s id:%d>" % ( klass, self.id )
 
 class Transaction( Base ):
 
@@ -43,6 +50,13 @@ class Transaction( Base ):
 	def refund( self, owner ):
 		return None
 
+	@property
+	def serialize( self ):
+		return { "id": self.id,
+			 "amount": self._amount,
+			 "timestamp": self._timestamp,
+			 "message": self._message }
+
 class Customer( Base ):
 
 	def __init__( self, api, id=None, customer_uri=None, transactions=[] ):
@@ -54,6 +68,18 @@ class Customer( Base ):
 
 	def _finalize( self ):
 		self._path = "/customer/%d" % self._id
+
+	def find( self ):
+		self._finalize()
+		body = self.serialize
+		result = self._proxy_request( "get", self._path, body )
+
+		if result.status_code == 200:
+			return Customer._from_json( result.json )
+		elif result.status_code == 404:
+			raise SinglePayError( "%s was not found." % self )
+		elif result.status_code == 500:
+			raise SinglePayError( "There appears to be an issue with the server." )
 
 	@property
 	def id( self ):
@@ -78,6 +104,12 @@ class Customer( Base ):
 
 	def refund( self, transaction ):
 		return transaction.refund( self )
+
+	@property
+	def serialize( self ):
+		return { "id": self.id,
+			 "customer_uri": self.customer_uri,
+			 "transactions": [ i.serialize for i in self.transactions ] }
 
 class Merchant( Base ):
 	def __init__( self, api, id=None, merchant_uri=None, transactions=[] ):
@@ -116,4 +148,10 @@ class Merchant( Base ):
 
 	def start_deposit( self ):
 		return None
+
+	@property
+	def serialize( self ):
+		return { "id": self.id,
+			 "merchant_uri": self.customer_uri,
+			 "transactions": [ i.serialize for i in self.transactions ] }
 
