@@ -42,21 +42,20 @@ app.login_manager.unauthorized = secure_unauthorized
 
 @app.errorhandler( 500 )
 def internal_error( e ):
-	print e
-
 	return { "status": 500, "message": e.message }
 
 @app.before_first_request
 def create_user():
-	if app.config["DEBUG"]:
+	if app.config["DEBUG"] or app.config["TESTING"]:
 		db.drop_all()
 		db.create_all()
-		user = api_datastore.create_user( email="sean@cheapfit.me", password="password" )
+		user = api_datastore.create_user( email="sean@singlepay.me", password="password" )
 		role = api_datastore.create_role( name="customer", description="Identitifies the user as a customer." )
 		api_datastore.add_role_to_user( user, role )
 		role = api_datastore.create_role( name="internal", description="Marks the API user as an internal one." )
 		api_datastore.add_role_to_user( user, role )
-		api_datastore.create_role( name="merchant", description="Identitifies a user as a merchant." )
+		role = api_datastore.create_role( name="merchant", description="Identitifies a user as a merchant." )
+		api_datastore.add_role_to_user( user, role )
 		db.session.commit()
 
 		create_customers()

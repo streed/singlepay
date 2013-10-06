@@ -7,11 +7,6 @@ from secureresource import SecureResource
 
 from ..models.customer import Customer as CustomerModel
 
-from schema import Schema, And, Use
-
-customer = Schema( { "customer": { "customer_uri": str } } )
-
-
 class Customers( SecureResource ):
 
 	@roles_accepted( "internal", "customer" )

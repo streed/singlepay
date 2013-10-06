@@ -2,9 +2,7 @@
 #Transaction = namedtuple( "Transaction", "id, amount, timestamp, message" )
 #Customer = namedtuple( "Customer", "id, customer_uri, transactions" )
 #Merchant = namedtuple( "Merchant", "id, merchant_uri, transactions" )
-
-class SinglePayError( Exception ):
-	pass
+from ..errors import SinglePayError
 
 class Base( object ):
 	
@@ -14,7 +12,7 @@ class Base( object ):
 	def _proxy_request( self, method, action, body ):
 		return self._api._make_request( method, action, body )
 
-	def __str__( self ):
+	def __repr__( self ):
 		klass = str( self.__class__ ).replace( "<class '", "" ).replace( "'>", "" )
 		return "<%s id:%d>" % ( klass, self.id )
 
@@ -68,18 +66,16 @@ class Customer( Base ):
 
 	def _finalize( self ):
 		self._path = "/customer/%d" % self._id
+		self._customer_uri = self._path
 
 	def find( self ):
 		self._finalize()
-		body = self.serialize
-		result = self._proxy_request( "get", self._path, body )
+		result = self._proxy_request( "get", self._path, {} )
 
-		if result.status_code == 200:
-			return Customer._from_json( result.json )
-		elif result.status_code == 404:
+		if "customer" in result:
+			return Customer( self._api, **result["customer"] )
+		else:
 			raise SinglePayError( "%s was not found." % self )
-		elif result.status_code == 500:
-			raise SinglePayError( "There appears to be an issue with the server." )
 
 	@property
 	def id( self ):
@@ -122,6 +118,15 @@ class Merchant( Base ):
 	def _finalize( self ):
 		self._path = "/merchant/%d" % self._id
 
+	def find( self ):
+		self._finalize()
+		result = self._proxy_request( "get", self._path, {} )
+
+		if "merchant" in result:
+			return Merchant( self._api, **result["merchant"] )
+		else:
+			raise SinglePayError( "%s was not found." % self )
+
 	@property
 	def id( self ):
 		return self._id
@@ -152,6 +157,6 @@ class Merchant( Base ):
 	@property
 	def serialize( self ):
 		return { "id": self.id,
-			 "merchant_uri": self.customer_uri,
+			 "merchant_uri": self.merchant_uri,
 			 "transactions": [ i.serialize for i in self.transactions ] }
 

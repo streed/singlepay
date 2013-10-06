@@ -7,8 +7,12 @@ from ..security.secure_access import _calc_signature
 from .models import Transaction, Customer, Merchant
 from .builders.customer import Customer as CustomerBuilder
 from .builders.merchant import Merchant as MerchantBuilder
+from .errors import SinglePayError, SinglePayPermissionsError, SinglePayInvalidMethodError
 
 class SinglePay( object ):
+
+	get = get
+	post = post
 
 	def __init__( self, public="", private="" ):
 		self._url = "http://localhost:5000"
@@ -19,28 +23,36 @@ class SinglePay( object ):
 
 			self.public = config.get("Keys", "public" )
 			self.private = config.get( "Keys", "private" )
+		else:
+			self.public = public
+			self.private = private
 
 		self.__customer_builder = CustomerBuilder( self )
 		self.__merchant_builder = MerchantBuilder( self )
 
 	def _make_request( self, method, action, body ):
 		if method == "get":
-			method = get
+			method = self.get
 		elif method == "post":
-			method = post
+			method = self.post
+		else:
+			raise SinglePayInvalidMethodError( method )
 
 		timestamp = int( time.time() )
-
 		signature = _calc_signature( self.private, self.public, action, body, timestamp )
-
 		headers = { "Timestamp": timestamp, "Signature": signature, "PublicKey": self.public }
 
-		return method( "%s%s" % ( self._url, action ), data=body, headers=headers )
+		response = method( "%s%s" % ( self._url, action ), data=body, headers=headers )
+
+		try:
+			response = response.json()
+		except AttributeError:
+			import json
+			response = json.loads( response.data )
+		return response
 
 	def _transactions( self, _type ):
 		response = self._make_request( get, "/transactions/%s" % _type, {} )
-
-		response = response.json()
 
 		return [ Transaction( self, **k ) for k in response[_type] ]
 
@@ -51,16 +63,18 @@ class SinglePay( object ):
 		return self._transactions( "credits" )
 
 	def customers( self ):
-		response = self._make_request( get, "/customers", {} )
-		response = response.json()
+		response = self._make_request( "get", "/customers", {} )
 
-		result = [ Customer( self, **k ) for k in response["customers"] ]
+		if "customers" in response:
 
-		return result
+			result = [ Customer( self, **k ) for k in response["customers"] ]
+
+			return result
+		else:
+			raise SinglePayPermissionsError( "/customers" )
 
 	def merchants( self ):
-		response = self._make_request( get, "/merchants", {} )
-		response = response.json()
+		response = self._make_request( "get", "/merchants", {} )
 
 		result = [ Merchant( self, **k ) for k in response["merchants"] ]
 
@@ -73,3 +87,4 @@ class SinglePay( object ):
 	@property
 	def merchant( self ):
 		return self.__merchant_builder
+

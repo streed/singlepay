@@ -13,5 +13,5 @@ class Merchant( db.Model ):
 	@property
 	def serialize( self ):
 		return { "id": self.id,
-			 "customer_uri": self.customer_uri,
-			 "transactions": [ i.serialize for i in transactions ] }
+			 "merchant_uri": self.merchant_uri,
+			 "transactions": [ i.serialize for i in self.transactions ] }

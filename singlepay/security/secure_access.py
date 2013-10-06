@@ -29,7 +29,6 @@ def _calc_signature( private, public, action, body, timestamp ):
 	for k in keys:
 		if not isinstance( body[k], str ):
 			body[k] = str( body[k] )
-
 	body_strs = []
 	for k in keys:
 		body_strs.append( "%s=%s" % ( quote( k, safe='' ), quote( body[k], safe="-_~" ) ) )
