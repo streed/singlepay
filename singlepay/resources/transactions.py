@@ -6,6 +6,8 @@ from flask.ext.security.decorators import roles_accepted, roles_required
 
 from secureresource import SecureResource
 
+from .. import app
+
 class Transactions( SecureResource ):
 
 	@roles_required( "internal" )
@@ -18,13 +20,13 @@ class Transactions( SecureResource ):
 
 	@roles_required( "internal" )
 	@roles_accepted( "customer", "merchant" )
-	def post( self, _type ):
-		data = request.form["data"]
+	def post( self ):
+		data = request.form["data"]	
 
 		ret = {}
-		ret[_type] = {}
+		ret = data
 
-		return ret
+		return { "A": "A" }
 
 class Transaction( SecureResource ):
 

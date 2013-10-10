@@ -24,8 +24,8 @@ api.add_resource( Customer, "/customer/<int:customer_id>" )
 api.add_resource( Merchants, "/merchants" )
 api.add_resource( Merchant, "/merchant/<int:merchant_id>" )
 
-api.add_resource( Transactions, "/transactions/<_type>" )
-api.add_resource( Transaction, "/transaction/<owner_type>/<int:owner_id>/<_type>/<int:transaction_id>" )
+api.add_resource( Transactions, "/transactions" )
+api.add_resource( Transaction, "/transaction/<int:transaction_id>" )
 
 api.add_resource( Information, "/information" )
 

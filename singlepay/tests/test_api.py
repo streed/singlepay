@@ -26,11 +26,19 @@ class TestApi( unittest.TestCase ):
 		assert_raises( SinglePayPermissionsError, self.client.customers )
 
 	def test_api_find_customer( self ):
-		customer = self.client.customer.create().set_id( 1 ).finalize().find()
+		customer = self.client.customer.create().set_id( 1 ).find()
 
 		assert_equals( "/test/uri/1", customer.customer_uri )
 
 	def test_api_find_merchant( self ):
-		merchant = self.client.merchant.create().set_id( 1 ).finalize().find()
+		merchant = self.client.merchant.create().set_id( 1 ).find()
 
 		assert_equals( "/test/uri/4", merchant.merchant_uri )
+
+	def test_api_create_transaction( self ):
+		customer = self.client.customer.create().set_id( 1 ).find()
+		merchant = self.client.merchant.create().set_id( 1 ).find()
+
+		transaction = self.client.transaction.create().set_amount( 100 ).set_timestamp( 10000000 ).set_message( "This is a test" ).set_customer( customer ).set_merchant( merchant ).save()
+
+		print transaction

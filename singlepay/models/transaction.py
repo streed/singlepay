@@ -9,11 +9,21 @@ class Transaction( db.Model ):
 	merchant_id = db.Column( db.Integer(), db.ForeignKey( "merchant.id" ) )
 	customer_id = db.Column( db.Integer(), db.ForeignKey( "customer.id" ) )
 
+	merchant = db.relationship( "Merchant", backref=db.backref( "transactions", lazy="dynamic" ) )
+	customer = db.relationship( "Customer", backref=db.backref( "transactions", lazy="dynamic" ) )
+
+	def __init__( self, amount, timestamp, message, merchant, customer ):
+		self.amount = amount
+		self.timestamp = timestamp
+		self.message = message
+		self.merchant = merchant
+		self.customer = customer
+
 	@property
 	def serialize( self ):
 		return { "id": self.id,
 			 "amount": self.amount,
 			 "timestamp": self.timestamp,
 			 "message": self.message,
-			 "customer": self.customer,
-			 "merchant": self.merchant }
+			 "customer": self.customer.serialize,
+			 "merchant": self.merchant.serialize }

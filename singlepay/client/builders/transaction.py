@@ -12,23 +12,5 @@ class Transaction( Builder ):
 			 "merchant": None, 
 			 "customer": None }
 
-	_model_ = CustomerModel
+	_model_ = TransactionModel
 
-	def __init__( self ):
-		Builder.__init__( self )
-
-		self._debitor = None
-		self._creditor = None
-		self._to_merchant = False
-
-	def debit( self, other ):
-		if isinstance( other, MerchantModel ):
-			self._to_merchant = True
-
-		self._debitor = other
-	
-	def credit( self, other ):
-		if isinstance( other, MerchantModel ):
-			self._to_merchant = False
-
-		self._creditor = other	

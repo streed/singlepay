@@ -1,7 +1,3 @@
-
-#Transaction = namedtuple( "Transaction", "id, amount, timestamp, message" )
-#Customer = namedtuple( "Customer", "id, customer_uri, transactions" )
-#Merchant = namedtuple( "Merchant", "id, merchant_uri, transactions" )
 from ..errors import SinglePayError
 
 class Base( object ):
@@ -18,16 +14,25 @@ class Base( object ):
 
 class Transaction( Base ):
 
-	def __init__( self, api, id=None, amount=None, timestamp=None, message=None ):
+	def __init__( self, api, id=None, amount=None, timestamp=None, message=None, customer=None, merchant=None ):
 		Base.__init__( self, api )
 
 		self._id = id
 		self._amount = amount
 		self._timestamp = timestamp
 		self._message = message
+		self._customer = customer
+		self._merchant = merchant
 
 	def _finalize( self ):
 		self._path = "/transaction/%d" % self._id
+
+	def save( self ):
+		self._finalize()
+		body = self.serialize
+		result = self._proxy_request( "post", "/transactions", body )
+
+		print result
 
 	@property
 	def id( self ):
@@ -45,6 +50,14 @@ class Transaction( Base ):
 	def message( self ):
 		return self._message
 
+	@property
+	def customer( self ):
+		return self._customer
+
+	@property
+	def merchant( self ):
+		return self._merchant
+
 	def refund( self, owner ):
 		return None
 
@@ -53,7 +66,9 @@ class Transaction( Base ):
 		return { "id": self.id,
 			 "amount": self._amount,
 			 "timestamp": self._timestamp,
-			 "message": self._message }
+			 "message": self._message,
+			 "customer": self._customer.serialize,
+			 "merchnat": self._merchant.serialize }
 
 class Customer( Base ):
 

@@ -7,6 +7,7 @@ from ..security.secure_access import _calc_signature
 from .models import Transaction, Customer, Merchant
 from .builders.customer import Customer as CustomerBuilder
 from .builders.merchant import Merchant as MerchantBuilder
+from .builders.transaction import Transaction as TransactionBuilder
 from .errors import SinglePayError, SinglePayPermissionsError, SinglePayInvalidMethodError
 
 class SinglePay( object ):
@@ -29,6 +30,7 @@ class SinglePay( object ):
 
 		self.__customer_builder = CustomerBuilder( self )
 		self.__merchant_builder = MerchantBuilder( self )
+		self.__transaction_builder = TransactionBuilder( self )
 
 	def _make_request( self, method, action, body ):
 		if method == "get":
@@ -44,11 +46,14 @@ class SinglePay( object ):
 
 		response = method( "%s%s" % ( self._url, action ), data=body, headers=headers )
 
+		print response.data, action
+
 		try:
 			response = response.json()
 		except AttributeError:
 			import json
 			response = json.loads( response.data )
+
 		return response
 
 	def _transactions( self, _type ):
@@ -87,4 +92,8 @@ class SinglePay( object ):
 	@property
 	def merchant( self ):
 		return self.__merchant_builder
+
+	@property
+	def transaction( self ):
+		return self.__transaction_builder
 

@@ -34,3 +34,8 @@ class Builder( object ):
 	def find( self ):
 		self.finalize()
 		return self._instance.find()
+	
+	def save( self ):
+		self.finalize()
+		return self._instance.save()
+
