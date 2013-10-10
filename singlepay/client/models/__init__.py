@@ -32,7 +32,9 @@ class Transaction( Base ):
 		body = self.serialize
 		result = self._proxy_request( "post", "/transactions", body )
 
-		print result
+		result = Transaction( self._api, **result["transaction"] )
+
+		return result
 
 	@property
 	def id( self ):
@@ -65,10 +67,10 @@ class Transaction( Base ):
 	def serialize( self ):
 		return { "id": self.id,
 			 "amount": self._amount,
-			 "timestamp": self._timestamp,
+			 "timestamp": self._timestamp.isoformat(),
 			 "message": self._message,
-			 "customer": self._customer.serialize,
-			 "merchnat": self._merchant.serialize }
+			 "customer": self._customer.id,
+			 "merchant": self._merchant.id }
 
 class Customer( Base ):
 
@@ -174,4 +176,5 @@ class Merchant( Base ):
 		return { "id": self.id,
 			 "merchant_uri": self.merchant_uri,
 			 "transactions": [ i.serialize for i in self.transactions ] }
+
 

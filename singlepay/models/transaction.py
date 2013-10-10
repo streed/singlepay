@@ -16,14 +16,19 @@ class Transaction( db.Model ):
 		self.amount = amount
 		self.timestamp = timestamp
 		self.message = message
-		self.merchant = merchant
-		self.customer = customer
+		self.merchant_id = merchant
+		self.customer_id = customer
+
+	def save( self ):
+		db.session.add( self )
+		db.session.commit()
 
 	@property
 	def serialize( self ):
 		return { "id": self.id,
 			 "amount": self.amount,
-			 "timestamp": self.timestamp,
+			 "timestamp": self.timestamp.isoformat(),
 			 "message": self.message,
-			 "customer": self.customer.serialize,
-			 "merchant": self.merchant.serialize }
+			 "customer": self.customer.id,
+			 "merchant": self.merchant.id }
+

@@ -3,10 +3,10 @@ from flask import request
 from flask.ext import restful
 
 from flask.ext.security.decorators import roles_accepted, roles_required
+import datetime
 
 from secureresource import SecureResource
-
-from .. import app
+from ..models.transaction import Transaction as TransactionModel
 
 class Transactions( SecureResource ):
 
@@ -21,12 +21,18 @@ class Transactions( SecureResource ):
 	@roles_required( "internal" )
 	@roles_accepted( "customer", "merchant" )
 	def post( self ):
-		data = request.form["data"]	
+		data = request.form
 
-		ret = {}
-		ret = data
+		transaction = TransactionModel( int( data["amount"] ), 
+					   datetime.datetime.strptime( data["timestamp"], "%Y-%m-%dT%H:%M:%S.%f" ),
+					   data["message"], 
+					   int( data["merchant"] ), 
+					   int( data["customer"] ) )
+		transaction.save()
 
-		return { "A": "A" }
+		ret = { "transaction": transaction.serialize }
+
+		return ret
 
 class Transaction( SecureResource ):
 

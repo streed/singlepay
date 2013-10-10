@@ -61,12 +61,9 @@ def _check_access():
 	if user and user.is_active():
 		privateKey = user.password
 
-		body = request.form.get( "data", None )
-
-		if not body:
-			body = {}
-		else:
-			body = current_app.json_decoder.decode( body )
+		body = {}
+		for k, v in request.form.iteritems():
+			body[k] = v
 
 		timestamp = int( timestamp )
 		signature = _calc_signature( privateKey, publicKey, request.path, body, timestamp )

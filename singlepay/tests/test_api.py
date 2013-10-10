@@ -1,4 +1,5 @@
 import unittest
+import datetime
 
 from ..app.app import app
 from ..client.client import SinglePay, SinglePayPermissionsError
@@ -39,6 +40,7 @@ class TestApi( unittest.TestCase ):
 		customer = self.client.customer.create().set_id( 1 ).find()
 		merchant = self.client.merchant.create().set_id( 1 ).find()
 
-		transaction = self.client.transaction.create().set_amount( 100 ).set_timestamp( 10000000 ).set_message( "This is a test" ).set_customer( customer ).set_merchant( merchant ).save()
+		date = datetime.datetime.utcnow()
+		transaction = self.client.transaction.create().set_amount( 100 ).set_timestamp( date ).set_message( "This is a test" ).set_customer( customer ).set_merchant( merchant ).save()
 
-		print transaction
+		assert transaction.id != -1

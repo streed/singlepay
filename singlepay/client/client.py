@@ -46,8 +46,6 @@ class SinglePay( object ):
 
 		response = method( "%s%s" % ( self._url, action ), data=body, headers=headers )
 
-		print response.data, action
-
 		try:
 			response = response.json()
 		except AttributeError:
